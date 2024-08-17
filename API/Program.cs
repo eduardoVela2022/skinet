@@ -15,6 +15,7 @@ builder.Services.AddDbContext<StoreContext>(opt =>
 });
 // Repository (Lifetime => http request life time)
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // Build web app
 var app = builder.Build();

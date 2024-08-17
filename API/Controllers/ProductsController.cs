@@ -1,9 +1,8 @@
 // Imports
 using Core.Entities;
 using Core.Interfaces;
-using Infrastructure.Data;
+using Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 // File path
 namespace API.Controllers;
@@ -12,15 +11,21 @@ namespace API.Controllers;
 // Gives routes automatic model binding
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController(IProductRepository repo) : ControllerBase 
+public class ProductsController(IGenericRepository<Product> repo) : ControllerBase 
 {
     // Get products api/products
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, 
     string? type, string? sort) // Query params (If these parameters are string, the api controller will search the query params for them)
     {
-        // Gets all the products from the database
-        return Ok(await repo.GetProductsAsync(brand, type, sort));
+        // Creates optional specs
+        var spec = new ProductSpecification(brand, type, sort);
+
+        // Gets all products with optional specs
+        var products = await repo.ListAsync(spec);
+
+        // Returns products
+        return Ok(products);
     }
 
     // Get products api/products/2
@@ -28,7 +33,7 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     public async Task<ActionResult<Product>> GetProduct(int id) 
     {
         // Gets a single product from the database
-        var product = await repo.GetProductByIdAsync(id);
+        var product = await repo.GetByIdAsync(id);
 
         // If product does not exists, return not found
         if(product == null) return NotFound();
@@ -42,10 +47,10 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     public async Task<ActionResult<Product>> CreateProduct(Product product) 
     {
         // Creates product and adds it to the database
-        repo.AddProduct(product);
+        repo.Add(product);
 
         // Saves the database changes and returns the product if it was successfull, also returns the products location
-        if(await repo.SavaChangesAsync()) {
+        if(await repo.SaveAllAsync()) {
             return CreatedAtAction("GetProduct", new {id = product.Id}, product);
         }
 
@@ -63,10 +68,10 @@ public class ProductsController(IProductRepository repo) : ControllerBase
             return BadRequest("Cannot update this product");
 
         // Tell entity framework that the product was modifies so it tracks its modified state
-        repo.UpdateProduct(product);
+        repo.Update(product);
 
         // Saves the database changes and return nothing
-        if(await repo.SavaChangesAsync()) 
+        if(await repo.SaveAllAsync()) 
         {
             return NoContent();
         }
@@ -80,16 +85,16 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     public async Task<ActionResult> DeleteProduct(int id)
     {
         // Gets the product with the given id
-        var product = await repo.GetProductByIdAsync(id);
+        var product = await repo.GetByIdAsync(id);
 
         // If the product doesn't exist, return not found
         if(product == null) return NotFound();
 
         // Tell entity framework to remove product
-        repo.DeleteProduct(product);
+        repo.Remove(product);
 
         // Saves the database changes and return nothing
-        if(await repo.SavaChangesAsync()) 
+        if(await repo.SaveAllAsync()) 
         {
             return NoContent();
         }
@@ -102,19 +107,23 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetBrands() 
     {
-        return Ok(await repo.GetBrandsAsync());
+        var spec = new BrandListSpecification();
+
+        return Ok(await repo.ListAsync(spec));
     }
 
     // Deletes a product api/products/types
     [HttpGet("types")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetTypes() 
     {
-        return Ok(await repo.GetTypesAsync());
+        var spec = new TypeListSpecification();
+        
+        return Ok(await repo.ListAsync(spec));
     }
 
     // Checks if a product has the given id
     private bool ProductExists(int id)
     {
-        return repo.ProductExists(id);
+        return repo.Exists(id);
     }
 }
