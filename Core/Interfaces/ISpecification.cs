@@ -8,7 +8,7 @@ public interface ISpecification<T>
 {
     // Where query
     Expression<Func<T, bool>>? Criteria { get; }
-    
+
     // Order query ascending
     Expression<Func<T, object>>? OrderBy { get; }
 
@@ -17,6 +17,18 @@ public interface ISpecification<T>
 
     // To get distinc values
     bool IsDistinct { get; }
+
+    // How many items the pagination will show
+    int Take { get; }
+
+    // How many will it skip
+    int Skip { get; }
+
+    // Is pagination enabled?
+    bool IsPagingEnabled { get; }
+
+    // Applies criteria
+    IQueryable<T> ApplyCriteria(IQueryable<T> query);
 }
 
 // Used to specify queries that return something different from T

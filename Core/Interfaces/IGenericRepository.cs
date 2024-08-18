@@ -6,7 +6,8 @@ namespace Core.Interfaces;
 
 // This generic repository provides the most common queries
 // So that we don't have to write them over and over again
-public interface IGenericRepository<T> where T : BaseEntity
+public interface IGenericRepository<T>
+    where T : BaseEntity
 {
     // Get by id
     Task<T?> GetByIdAsync(int id);
@@ -27,7 +28,7 @@ public interface IGenericRepository<T> where T : BaseEntity
     Task<IReadOnlyList<TResult>> ListAsync<TResult>(ISpecification<T, TResult> spec);
 
     // Add entity
-    void Add (T entity);
+    void Add(T entity);
 
     // Update entity
     void Update(T entity);
@@ -40,4 +41,7 @@ public interface IGenericRepository<T> where T : BaseEntity
 
     // Check if entity exists
     bool Exists(int id);
+
+    // Returns the count of available entities
+    Task<int> CountAsync(ISpecification<T> spec);
 }

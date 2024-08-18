@@ -6,12 +6,23 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Data;
 
 // Implementation of the generic repository interface
-public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
+    where T : BaseEntity
 {
     // Add entity
     public void Add(T entity)
     {
         context.Set<T>().Add(entity);
+    }
+
+    // Returns the count of entities
+    public async Task<int> CountAsync(ISpecification<T> spec)
+    {
+        var query = context.Set<T>().AsQueryable();
+
+        query = spec.ApplyCriteria(query);
+
+        return await query.CountAsync();
     }
 
     // Check if entity exists
