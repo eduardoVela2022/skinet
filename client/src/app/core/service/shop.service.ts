@@ -51,6 +51,11 @@ export class ShopService {
     });
   }
 
+  // Gets an individual product that matches the given id
+  getProduct(id: number) {
+    return this.http.get<Product>(this.baseUrl + 'products/' + id);
+  }
+
   // Gets the brands of the products
   getBrands() {
     if (this.brands.length > 0) return;
