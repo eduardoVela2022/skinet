@@ -1,4 +1,8 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import {
+  APP_INITIALIZER,
+  ApplicationConfig,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -6,6 +10,20 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+import { InitService } from './core/services/init.service';
+import { lastValueFrom } from 'rxjs';
+
+function initializeApp(initService: InitService) {
+  return () =>
+    // Gets the cart service
+    lastValueFrom(initService.init()).finally(() => {
+      // Removes splash once cart has been retrived
+      const splash = document.getElementById('initial-splash');
+      if (splash) {
+        splash.remove();
+      }
+    });
+}
 
 // Application Config
 export const appConfig: ApplicationConfig = {
@@ -14,5 +32,11 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([errorInterceptor, loadingInterceptor])),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeApp,
+      multi: true,
+      deps: [InitService],
+    },
   ],
 };
