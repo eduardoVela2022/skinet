@@ -1,5 +1,6 @@
 // Imports
 using API.Middleware;
+using Core.Entities;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Services;
@@ -39,6 +40,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 // The Redis shopping cart service
 builder.Services.AddSingleton<ICartService, CartService>();
 
+// Identity framework
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>().AddEntityFrameworkStores<StoreContext>();
+
 // Build web app
 var app = builder.Build();
 
@@ -50,11 +55,15 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x =>
     x.AllowAnyHeader()
         .AllowAnyMethod()
+        .AllowCredentials()
         .WithOrigins("http://localhost:4200", "https://localhost:4200")
 );
 
 // Ends points for controllers
 app.MapControllers();
+
+// Identity framework
+app.MapGroup("api").MapIdentityApi<AppUser>(); // api/login
 
 //[Start up]
 try
