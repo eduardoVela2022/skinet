@@ -1,6 +1,7 @@
 // Imports
 using Core.Entities;
 using Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 // File path
 namespace Infrastructure.Data;
@@ -38,6 +39,14 @@ public class SpecificationEvaluator<T>
         {
             query = query.Skip(spec.Skip).Take(spec.Take);
         }
+
+        // Includes related properties
+        query = spec.Includes.Aggregate(query, (current, include) => current.Include(include));
+
+        query = spec.IncludeStrings.Aggregate(
+            query,
+            (current, include) => current.Include(include)
+        );
 
         // Returns query
         return query;

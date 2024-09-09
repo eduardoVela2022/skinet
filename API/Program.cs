@@ -23,6 +23,7 @@ builder.Services.AddDbContext<StoreContext>(opt =>
 // Entity framwork services
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Enables CORS
 builder.Services.AddCors();

@@ -15,6 +15,11 @@ public interface ISpecification<T>
     // Order query desending
     Expression<Func<T, object>>? OrderByDescending { get; }
 
+    // Include related entities
+    List<Expression<Func<T, object>>> Includes { get; }
+
+    List<string> IncludeStrings { get; } // For ThenInclude for related entities of related entities
+
     // To get distinc values
     bool IsDistinct { get; }
 

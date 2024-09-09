@@ -12,7 +12,7 @@ namespace API.Controllers;
 // Gives routes automatic model binding
 [ApiController]
 [Route("api/[controller]")]
-public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
+public class ProductsController(IUnitOfWork unit) : BaseApiController
 {
     // Get products api/products
     [HttpGet]
@@ -24,7 +24,12 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
         var spec = new ProductSpecification(specParams);
 
         // Returns products
-        return await CreatePagedResult(repo, spec, specParams.PageIndex, specParams.PageSize);
+        return await CreatePagedResult(
+            unit.Repository<Product>(),
+            spec,
+            specParams.PageIndex,
+            specParams.PageSize
+        );
     }
 
     // Get products api/products/2
@@ -32,7 +37,7 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
         // Gets a single product from the database
-        var product = await repo.GetByIdAsync(id);
+        var product = await unit.Repository<Product>().GetByIdAsync(id);
 
         // If product does not exists, return not found
         if (product == null)
@@ -47,10 +52,10 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     public async Task<ActionResult<Product>> CreateProduct(Product product)
     {
         // Creates product and adds it to the database
-        repo.Add(product);
+        unit.Repository<Product>().Add(product);
 
         // Saves the database changes and returns the product if it was successfull, also returns the products location
-        if (await repo.SaveAllAsync())
+        if (await unit.Complete())
         {
             return CreatedAtAction("GetProduct", new { id = product.Id }, product);
         }
@@ -69,10 +74,10 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
             return BadRequest("Cannot update this product");
 
         // Tell entity framework that the product was modifies so it tracks its modified state
-        repo.Update(product);
+        unit.Repository<Product>().Update(product);
 
         // Saves the database changes and return nothing
-        if (await repo.SaveAllAsync())
+        if (await unit.Complete())
         {
             return NoContent();
         }
@@ -86,17 +91,17 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     public async Task<ActionResult> DeleteProduct(int id)
     {
         // Gets the product with the given id
-        var product = await repo.GetByIdAsync(id);
+        var product = await unit.Repository<Product>().GetByIdAsync(id);
 
         // If the product doesn't exist, return not found
         if (product == null)
             return NotFound();
 
         // Tell entity framework to remove product
-        repo.Remove(product);
+        unit.Repository<Product>().Remove(product);
 
         // Saves the database changes and return nothing
-        if (await repo.SaveAllAsync())
+        if (await unit.Complete())
         {
             return NoContent();
         }
@@ -111,7 +116,7 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     {
         var spec = new BrandListSpecification();
 
-        return Ok(await repo.ListAsync(spec));
+        return Ok(await unit.Repository<Product>().ListAsync(spec));
     }
 
     // Deletes the types of a product api/products/types
@@ -120,12 +125,12 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     {
         var spec = new TypeListSpecification();
 
-        return Ok(await repo.ListAsync(spec));
+        return Ok(await unit.Repository<Product>().ListAsync(spec));
     }
 
     // Checks if a product has the given id
     private bool ProductExists(int id)
     {
-        return repo.Exists(id);
+        return unit.Repository<Product>().Exists(id);
     }
 }

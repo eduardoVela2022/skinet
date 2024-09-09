@@ -73,12 +73,6 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T>
         context.Set<T>().Remove(entity);
     }
 
-    // Save all database changes
-    public async Task<bool> SaveAllAsync()
-    {
-        return await context.SaveChangesAsync() > 0;
-    }
-
     // Update entity
     public void Update(T entity)
     {

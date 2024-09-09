@@ -36,9 +36,6 @@ public interface IGenericRepository<T>
     // Remove entity
     void Remove(T entity);
 
-    // Save all database changes
-    Task<bool> SaveAllAsync();
-
     // Check if entity exists
     bool Exists(int id);
 

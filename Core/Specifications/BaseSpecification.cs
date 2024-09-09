@@ -33,6 +33,12 @@ public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecif
     // Is pagination enabled?
     public bool IsPagingEnabled { get; private set; }
 
+    // Include related entities
+    public List<Expression<Func<T, object>>> Includes { get; } = [];
+
+    // For ThenInclude for related entities of related entities
+    public List<string> IncludeStrings { get; } = [];
+
     // Returns a query with the applied criteria
     public IQueryable<T> ApplyCriteria(IQueryable<T> query)
     {
@@ -42,6 +48,16 @@ public class BaseSpecification<T>(Expression<Func<T, bool>>? criteria) : ISpecif
         }
 
         return query;
+    }
+
+    protected void AddInclude(Expression<Func<T, object>> includeExpression)
+    {
+        Includes.Add(includeExpression);
+    }
+
+    protected void AddInclude(string includeString)
+    {
+        IncludeStrings.Add(includeString);
     }
 
     // Set order by ascending
