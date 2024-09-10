@@ -1,5 +1,6 @@
 // Imports
 using API.Middleware;
+using API.SignalR;
 using Core.Entities;
 using Core.Interfaces;
 using Infrastructure.Data;
@@ -24,6 +25,9 @@ builder.Services.AddDbContext<StoreContext>(opt =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Signal R
+builder.Services.AddSignalR();
 
 // Enables CORS
 builder.Services.AddCors();
@@ -63,11 +67,18 @@ app.UseCors(x =>
         .WithOrigins("http://localhost:4200", "https://localhost:4200")
 );
 
+// SignalR
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Ends points for controllers
 app.MapControllers();
 
 // Identity framework
 app.MapGroup("api").MapIdentityApi<AppUser>(); // api/login
+
+// SignalR
+app.MapHub<NotificationHub>("hub/notifications");
 
 //[Start up]
 try

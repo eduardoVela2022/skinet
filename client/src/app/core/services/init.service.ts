@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { CartService } from './cart.service';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, tap } from 'rxjs';
 import { AccountService } from './account.service';
+import { SignalrService } from './signalr.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,8 @@ export class InitService {
   private cartService = inject(CartService);
   // Persists the login state of the user
   private accountService = inject(AccountService);
+  // Signal r
+  private signalrService = inject(SignalrService);
 
   init() {
     const cartId = localStorage.getItem('cart_id');
@@ -20,7 +23,11 @@ export class InitService {
     // Waits until all the http request are completed
     return forkJoin({
       cart: cart$,
-      user: this.accountService.getUserInfo(),
+      user: this.accountService.getUserInfo().pipe(
+        tap((user) => {
+          if (user) this.signalrService.createHubConnection();
+        })
+      ),
     });
   }
 }
