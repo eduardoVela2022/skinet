@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-test-error',
@@ -11,7 +12,7 @@ import { MatButton } from '@angular/material/button';
 })
 export class TestErrorComponent {
   // Base api url
-  baseUrl = 'https://localhost:5001/api/';
+  baseUrl = environment.apiUrl;
   // http client is used to make requests
   private http = inject(HttpClient);
   // Holds all the validation errors produced

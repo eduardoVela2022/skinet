@@ -1,7 +1,8 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { delay, finalize } from 'rxjs';
+import { delay, finalize, identity } from 'rxjs';
 import { BusyService } from '../services/busy.service';
+import { environment } from '../../../environments/environment';
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   // Service that controls loading
@@ -13,7 +14,7 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   // Adds delay to the requests the app makes
   return next(req).pipe(
     // Artificial delay
-    delay(500),
+    environment.production ? identity : delay(500),
     // App is no longer loading
     finalize(() => busyService.idle())
   );

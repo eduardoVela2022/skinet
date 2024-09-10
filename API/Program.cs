@@ -71,6 +71,10 @@ app.UseCors(x =>
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Deployment
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Ends points for controllers
 app.MapControllers();
 
@@ -79,6 +83,9 @@ app.MapGroup("api").MapIdentityApi<AppUser>(); // api/login
 
 // SignalR
 app.MapHub<NotificationHub>("hub/notifications");
+
+// Deployment redirect to angular files
+app.MapFallbackToController("Index", "Fallback");
 
 //[Start up]
 try
